@@ -1,0 +1,56 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    kotlin("jvm") version "2.3.20-Beta2"
+    id("com.gradleup.shadow") version "8.3.0"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("de.eldoria.plugin-yml.paper") version "0.7.1"
+}
+
+group = "cat.emir"
+version = "1.0.0"
+
+repositories {
+    mavenCentral()
+    maven("https://repo.papermc.io/repository/maven-public/")
+}
+
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+    paperLibrary("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+}
+
+tasks {
+    runServer {
+        minecraftVersion("1.21.6")
+    }
+
+    jar.get().enabled = false
+
+    build {
+        dependsOn("shadowJar")
+    }
+
+    shadowJar {
+        archiveClassifier = ""
+    }
+}
+
+paper {
+    authors = listOf("EmirhanTr3")
+    description = "Make your server easily with simple syntax."
+    website = "https://github.com/EmirhanTr3/Echode"
+    main = "cat.emir.echode.Echode"
+    loader = "cat.emir.echode.load.LibraryLoader"
+    apiVersion = "1.21.10"
+
+    // Keep this on!
+    generateLibrariesJson = true
+
+    serverDependencies {
+    }
+}
+
+kotlin {
+    jvmToolchain(21)
+}
