@@ -1,0 +1,47 @@
+package cat.emir.echode.arguments
+
+import cat.emir.echode.Echode
+import cat.emir.echode.script.EchodeScript
+import com.mojang.brigadier.StringReader
+import com.mojang.brigadier.arguments.ArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType
+import com.mojang.brigadier.suggestion.Suggestions
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
+import io.papermc.paper.command.brigadier.MessageComponentSerializer
+import io.papermc.paper.command.brigadier.argument.CustomArgumentType
+import net.kyori.adventure.text.Component
+import java.nio.file.Path
+import java.util.concurrent.CompletableFuture
+
+
+class ScriptArgument : CustomArgumentType<EchodeScript, String> {
+    val plugin = Echode.instance!!
+
+    val ERROR_SCRIPT_NOT_FOUND: DynamicCommandExceptionType = DynamicCommandExceptionType { script: Any? ->
+        MessageComponentSerializer.message().serialize(Component.text("$script does not exist."))
+    }
+
+    override fun parse(reader: StringReader): EchodeScript {
+        val input = reader.readString()
+        val path = Path.of(plugin.dataPath.toString(), "scripts", input).toAbsolutePath()
+
+        val script = plugin.loader.scripts[path] ?: throw ERROR_SCRIPT_NOT_FOUND.create(input)
+
+        return script
+    }
+
+    override fun getNativeType(): ArgumentType<String> {
+        return StringArgumentType.greedyString()
+    }
+
+    override fun <S : Any> listSuggestions(context: CommandContext<S>, builder: SuggestionsBuilder): CompletableFuture<Suggestions> {
+        plugin.loader.scripts.keys
+            .map { it.toString().replace(plugin.dataPath.toAbsolutePath().toString() + "/scripts/", "") }
+            .map { if (it.contains("/")) ("\"" + it + "\"") else it }
+            .forEach(builder::suggest)
+
+        return builder.buildFuture()
+    }
+}

@@ -1,56 +1,28 @@
 package cat.emir.echode
 
-import cat.emir.echode.effects.BroadcastEffect
-import cat.emir.echode.effects.GiveEffect
-import cat.emir.echode.effects.PrintEffect
-import cat.emir.echode.events.ChatEvent
-import cat.emir.echode.events.LoadEvent
-import cat.emir.echode.listeners.ChatListener
-import cat.emir.echode.script.effect.EffectRegistry
-import cat.emir.echode.script.Parser
+import cat.emir.echode.commands.MainCommand
+import cat.emir.echode.listener.LuaEventListeners
+import cat.emir.echode.luavm.LuaEngine
 import cat.emir.echode.script.ScriptLoader
-import cat.emir.echode.script.event.EventRegistry
-import org.bukkit.Bukkit
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import org.bukkit.plugin.java.JavaPlugin
-import java.nio.file.Files
-import kotlin.io.path.Path
 
 class Echode : JavaPlugin() {
     companion object {
         var instance: Echode? = null
             private set
     }
-
-    lateinit var parser: Parser
-    lateinit var loader: ScriptLoader
-    lateinit var effectRegistry: EffectRegistry
-    lateinit var eventRegistry: EventRegistry
+    val engine: LuaEngine = LuaEngine(this)
+    val loader: ScriptLoader = ScriptLoader(this).apply { load() }
 
     override fun onEnable() {
         instance = this
-        parser = Parser(this)
-        loader = ScriptLoader(this)
-        effectRegistry = EffectRegistry(this)
-        eventRegistry = EventRegistry(this)
 
-        if (!Files.exists(Path(dataFolder.toString(), "scripts"))) {
-            Files.createDirectories(Path(dataFolder.toString(), "scripts"))
+        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
+            it.registrar().register(MainCommand().getCommand().build())
         }
 
-        effectRegistry.register(
-            PrintEffect(),
-            GiveEffect(),
-            BroadcastEffect()
-        )
-
-        eventRegistry.register(
-            LoadEvent(),
-            ChatEvent()
-        )
-
-        Bukkit.getPluginManager().registerEvents(ChatListener(this), this)
-
-        loader.load()
+        server.pluginManager.registerEvents(LuaEventListeners(loader), this)
     }
 
     override fun onDisable() {
