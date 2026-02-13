@@ -16,6 +16,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
     paperLibrary("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    paperLibrary("io.github.classgraph:classgraph:4.8.179")
     implementation("party.iroiro.luajava:luajava:4.1.0")
     implementation("party.iroiro.luajava:lua53:4.1.0")
     runtimeOnly("party.iroiro.luajava:lua53-platform:4.1.0:natives-desktop")

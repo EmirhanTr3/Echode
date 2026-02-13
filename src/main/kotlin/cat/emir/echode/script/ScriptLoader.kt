@@ -5,22 +5,21 @@ import org.bukkit.command.CommandSender
 import org.bukkit.event.Event
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.extension
-import kotlin.io.path.name
 
 class ScriptLoader(val plugin: Echode) {
     val lua = plugin.engine.lua
     val scripts = mutableMapOf<Path, EchodeScript>()
 
     fun load() {
-        val files = Files.walk(Path(plugin.dataPath.toString(), "scripts"), 3)
+        val files = Files.walk(plugin.scriptsPath, 3)
             .filter { it.extension == "lua" }
             .toList()
 
         for (file in files) {
             plugin.logger.info("Loading script ${file.fileName}")
-            scripts[file.toAbsolutePath()] = EchodeScript(file, plugin.engine)
+            val script = EchodeScript(file, plugin.engine)
+            scripts[script.relativePath] = script
         }
 
         for (script in scripts.values) {
@@ -31,7 +30,7 @@ class ScriptLoader(val plugin: Echode) {
     fun reloadScript(sender: CommandSender?, script: EchodeScript?) {
         val start = System.currentTimeMillis()
 
-        sendReloadMessage(sender, "<aqua>[Echode] Reloading ${script?.path?.name ?: "all scripts"}...")
+        sendReloadMessage(sender, "<aqua>[Echode] Reloading ${script?.relativePath ?: "all scripts"}...")
 
         if (script != null) {
             script.load(true)
@@ -40,7 +39,7 @@ class ScriptLoader(val plugin: Echode) {
             load()
         }
 
-        sendReloadMessage(sender, "<aqua>[Echode] Reloaded ${script ?: "all scripts"} in ${System.currentTimeMillis() - start}ms")
+        sendReloadMessage(sender, "<aqua>[Echode] Reloaded ${script?.relativePath ?: "all scripts"} in ${System.currentTimeMillis() - start}ms")
     }
 
     private fun sendReloadMessage(sender: CommandSender?, message: String) {
