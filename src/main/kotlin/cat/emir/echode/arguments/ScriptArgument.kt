@@ -15,7 +15,7 @@ import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 
 class ScriptArgument : CustomArgumentType.Converted<EchodeScript, String> {
-    val plugin = Echode.instance!!
+    val plugin = Echode.instance
 
     val ERROR_SCRIPT_NOT_FOUND: DynamicCommandExceptionType = DynamicCommandExceptionType { script: Any? ->
         MessageComponentSerializer.message().serialize(Component.text("$script does not exist."))

@@ -7,7 +7,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import io.papermc.paper.command.brigadier.CommandSourceStack
 
 abstract class PluginCommand {
-    val plugin = Echode.instance!!
+    val plugin = Echode.instance
     
     fun command(
         name: String,

@@ -12,6 +12,7 @@ class LuaEngine(val plugin: Echode) {
         setExternalLoader(ClassPathLoader(LuaEngine::class.java.classLoader))
         set("plugin", plugin)
         set("logger", ScriptLogger(plugin))
+        set("data", LuaDataAccessor(plugin.variableManager))
     }
 
     init {

@@ -14,11 +14,15 @@ class MainCommand : PluginCommand() {
             subcommand("reload") {
                 requires { it.sender.hasPermission("echode.command.reload") }
                 argument("script", ScriptArgument()) {
-                    executes(this@MainCommand::reload)
+                    executes(::reload)
                 }
                 subcommand("all") {
-                    executes(this@MainCommand::reloadAll)
+                    executes(::reloadAll)
                 }
+            }
+            subcommand("forcesave") {
+                requires { it.sender.hasPermission("echode.command.forcesave") }
+                executes(::forceSave)
             }
         }
     }
@@ -33,6 +37,14 @@ class MainCommand : PluginCommand() {
         val script = ctx.getArgument("script", EchodeScript::class.java)
 
         plugin.loader.reloadScript(ctx.source.sender, script)
+
+        return 1
+    }
+
+    fun forceSave(ctx: CommandContext<CommandSourceStack>): Int {
+        val count = plugin.variableManager.save()
+
+        ctx.source.sender.sendRichMessage("<aqua>[Echode] Saved $count variables.")
 
         return 1
     }

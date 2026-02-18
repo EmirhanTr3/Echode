@@ -8,7 +8,7 @@ class ClassUtils {
         fun findClasses(pkg: String, condition: (ClassInfo) -> Boolean, function: (ClassInfo) -> Unit) {
             ClassGraph()
                 .acceptPackages(pkg)
-                .addClassLoader(Echode.instance!!.javaClass.classLoader)
+                .addClassLoader(Echode.instance.javaClass.classLoader)
                 .enableClassInfo()
                 .scan().use { scanResult ->
                     scanResult.allClasses.forEach {
