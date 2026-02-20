@@ -28,7 +28,8 @@ class VariableManager(val plugin: Echode) {
     }
 
     fun startSaveTask() {
-        plugin.server.scheduler.runTaskTimerAsynchronously(plugin, this::save, 6000, 6000)
+        val time = 1 * 60 * 20L
+        plugin.server.scheduler.runTaskTimerAsynchronously(plugin, this::save, time, time)
     }
 
     fun loadSerializers() {

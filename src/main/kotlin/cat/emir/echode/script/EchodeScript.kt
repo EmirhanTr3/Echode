@@ -9,6 +9,12 @@ import kotlin.io.path.relativeTo
 class EchodeScript(val path: Path, val engine: LuaEngine) {
     val relativePath = path.relativeTo(engine.plugin.scriptsPath)
     var lines = path.readLines()
+    val header = """
+        local script = {
+            name = "${path.fileName}",
+            path = "$relativePath"
+        }
+    """.trimIndent()
 
     fun load(resetLines: Boolean = false) {
         if (resetLines) lines = path.readLines()
@@ -24,13 +30,6 @@ class EchodeScript(val path: Path, val engine: LuaEngine) {
                 end
             end
         """.trimIndent())
-
-        val header = """
-            local script = {
-                name = "${path.fileName}",
-                path = "$relativePath"
-            }
-        """.trimIndent()
 
         try {
             val content = header + "\n" + lines.joinToString("\n")
