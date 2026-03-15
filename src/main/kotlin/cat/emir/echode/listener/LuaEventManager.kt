@@ -13,7 +13,7 @@ class LuaEventManager(val plugin: Echode) {
 
     fun registerCustom(className: String, luaName: String) {
         try {
-            val clazz = Class.forName(className).asSubclass(Event::class.java)
+            val clazz = Echode.instance.getClass(className).asSubclass(Event::class.java)
 
             if (!registeredClasses.contains(clazz)) {
                 val pluginManager = plugin.server.pluginManager

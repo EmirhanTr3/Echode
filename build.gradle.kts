@@ -3,6 +3,7 @@ plugins {
     id("com.gradleup.shadow") version "8.3.0"
     id("xyz.jpenilla.run-paper") version "2.3.1"
     id("de.eldoria.plugin-yml.paper") version "0.7.1"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
 }
 
 group = "cat.emir"
@@ -14,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.21.10-R0.1-SNAPSHOT")
     paperLibrary("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     paperLibrary("io.github.classgraph:classgraph:4.8.179")
     implementation("party.iroiro.luajava:luajava:4.1.0")
