@@ -1,6 +1,7 @@
 package cat.emir.echode.commands
 
 import cat.emir.echode.arguments.LuaArgument
+import cat.emir.echode.arguments.PathArgument
 import cat.emir.echode.arguments.ScriptArgument
 import cat.emir.echode.commandlib.PluginCommand
 import cat.emir.echode.script.EchodeScript
@@ -10,6 +11,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import org.bukkit.entity.Player
+import java.nio.file.Path
+import kotlin.io.path.pathString
+import kotlin.io.path.relativeTo
 
 class MainCommand : PluginCommand() {
     override fun getCommand(): LiteralArgumentBuilder<CommandSourceStack> {
@@ -32,6 +36,20 @@ class MainCommand : PluginCommand() {
                 requires { it.sender.hasPermission("echode.command.run") }
                 argument("code", LuaArgument()) {
                     executes(::run)
+                }
+            }
+            subcommand("disable") {
+                requires { it.sender.hasPermission("echode.command.disable") }
+                argument("script", ScriptArgument()) {
+                    executes(::disable)
+                }
+            }
+            subcommand("enable") {
+                requires { it.sender.hasPermission("echode.command.enable") }
+                argument("script", PathArgument(plugin.scriptsPath, { path ->
+                    path.pathString.split("/", "\\").any { it.startsWith("-") }
+                })) {
+                    executes(::enable)
                 }
             }
         }
@@ -70,6 +88,36 @@ class MainCommand : PluginCommand() {
         ctx.source.sender.sendRichMessage("<gray>Running: $code")
         RunLuaCode(code, plugin.engine)
             .run(ctx.source.sender as Player)
+
+        return 1
+    }
+
+    fun disable(ctx: CommandContext<CommandSourceStack>): Int {
+        val script = ctx.getArgument("script", EchodeScript::class.java)
+
+        script.disable()
+
+        ctx.source.sender.sendRichMessage("<aqua>[Echode] Disabled ${script.relativePath}")
+        return 1
+    }
+
+    fun enable(ctx: CommandContext<CommandSourceStack>): Int {
+        var path = ctx.getArgument("script", Path::class.java)
+
+        val split = path.toString().split("/", "\\").toMutableList()
+        if (split[split.lastIndex].contains("-")) {
+            split[split.lastIndex] = split[split.lastIndex].replaceFirst("-", "")
+            val newPath = Path.of(split.joinToString("/"))
+            path.toFile().renameTo(newPath.toFile())
+            path = newPath
+        }
+
+        val script = plugin.loader.loadScript(path)
+        if (script == null) {
+            ctx.source.sender.sendRichMessage("<red>[Echode] Script ${plugin.loader.scripts[path.relativeTo(plugin.scriptsPath)]} is already enabled.")
+        } else {
+            ctx.source.sender.sendRichMessage("<aqua>[Echode] Loaded script ${script.relativePath}")
+        }
 
         return 1
     }

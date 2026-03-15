@@ -21,15 +21,7 @@ class EchodeScript(val path: Path, val engine: LuaEngine) {
 
         engine.lua.set("current_loading_file", relativePath.toString())
 
-        engine.lua.run("""
-            for eventName, handlers in pairs(internal_handlers) do
-                for i = #handlers, 1, -1 do
-                    if handlers[i].source == "$relativePath" then
-                        table.remove(handlers, i)
-                    end
-                end
-            end
-        """.trimIndent())
+        removeHandlers()
 
         try {
             val content = header + "\n" + lines.joinToString("\n")
@@ -50,5 +42,28 @@ class EchodeScript(val path: Path, val engine: LuaEngine) {
         engine.lua.pushNil()
         engine.lua.setGlobal("current_loading_file")
         engine.lua.top = top
+    }
+
+    fun disable() {
+        removeHandlers()
+        engine.plugin.loader.scripts.remove(this.relativePath)
+
+        val split = path.toString().split("/", "\\").toMutableList()
+        if (!split[split.lastIndex].contains("-")) {
+            split[split.lastIndex] = "-" + split[split.lastIndex]
+            path.toFile().renameTo(Path.of(split.joinToString("/")).toFile())
+        }
+    }
+
+    private fun removeHandlers() {
+        engine.lua.run("""
+            for eventName, handlers in pairs(internal_handlers) do
+                for i = #handlers, 1, -1 do
+                    if handlers[i].source == "$relativePath" then
+                        table.remove(handlers, i)
+                    end
+                end
+            end
+        """.trimIndent())
     }
 }

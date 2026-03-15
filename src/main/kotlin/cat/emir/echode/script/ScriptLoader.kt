@@ -6,6 +6,8 @@ import org.bukkit.event.Event
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
+import kotlin.io.path.name
+import kotlin.io.path.pathString
 
 class ScriptLoader(val plugin: Echode) {
     val lua = plugin.engine.lua
@@ -17,6 +19,11 @@ class ScriptLoader(val plugin: Echode) {
             .toList()
 
         for (file in files) {
+            if (file.pathString.split("/", "\\").any { it.startsWith("-") }) {
+                plugin.logger.info("Skipped disabled script ${file.fileName}.")
+                continue
+            }
+
             plugin.logger.info("Loading script ${file.fileName}")
             val script = EchodeScript(file, plugin.engine)
             scripts[script.relativePath] = script
@@ -25,6 +32,18 @@ class ScriptLoader(val plugin: Echode) {
         for (script in scripts.values) {
             script.load()
         }
+    }
+
+    fun loadScript(path: Path): EchodeScript? {
+        if (scripts.containsKey(path)) return null
+
+        plugin.logger.info("Loading script ${path.fileName}")
+        val script = EchodeScript(path, plugin.engine)
+        scripts[script.relativePath] = script
+
+        script.load()
+
+        return script
     }
 
     fun reloadScript(sender: CommandSender?, script: EchodeScript?) {
@@ -36,6 +55,9 @@ class ScriptLoader(val plugin: Echode) {
             script.load(true)
         } else {
             scripts.clear()
+
+            lua.run("internal_handlers = {}")
+
             load()
         }
 
