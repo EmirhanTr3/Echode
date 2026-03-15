@@ -35,7 +35,7 @@ class LuaEventManager(val plugin: Echode) {
             }
 
         } catch (e: Exception) {
-            plugin.logger.severe("Failed to register $luaName: ${e.message}")
+            plugin.logger.severe("Failed to register $luaName: $e")
         }
     }
 }

@@ -13,15 +13,14 @@ import io.papermc.paper.plugin.entrypoint.classloader.group.StaticPluginClassLoa
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import io.papermc.paper.plugin.provider.classloader.PaperClassLoaderStorage
 import io.papermc.paper.plugin.provider.classloader.PluginClassLoaderGroup
-import org.bukkit.event.EventHandler
-import org.bukkit.event.server.ServerLoadEvent
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.net.URLClassLoader
 import java.util.jar.JarFile
 import kotlin.io.path.div
 
-class Echode : JavaPlugin() {
+class Echode : JavaPlugin(), Listener {
     companion object {
         lateinit var instance: Echode
             private set
@@ -36,6 +35,7 @@ class Echode : JavaPlugin() {
 
     override fun onEnable() {
         instance = this
+        loadClasses()
 
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(MainCommand().getCommand().build())
@@ -45,6 +45,7 @@ class Echode : JavaPlugin() {
         variableManager.startSaveTask()
         loader.load()
         eventManager.load()
+
     }
 
     override fun onDisable() {
@@ -54,19 +55,18 @@ class Echode : JavaPlugin() {
     fun createListener(className: String, luaName: String) = eventManager.registerCustom(className, luaName)
 
     fun getClass(className: String): Class<*> {
-        return classes[className]?.loadClass(className) ?: throw ClassNotFoundException(className)
+        return classes[className]?.loadClass(className) ?: Class.forName(className)
     }
 
     @Suppress("UnstableApiUsage")
-    @EventHandler
-    private fun onServerLoad(event: ServerLoadEvent) {
+    private fun loadClasses() {
         val pluginClassLoader = PaperClassLoaderStorage.instance() as PaperPluginClassLoaderStorage
         var pluginCount = 0
 
         pluginClassLoader.groups
             .flatMap(this::extractLoaders)
             .forEach { classLoader ->
-                slF4JLogger.info("classloader: $classLoader")
+//                slF4JLogger.info("classloader: $classLoader")
 
                 classLoader.urLs.forEach { url ->
                     try {
